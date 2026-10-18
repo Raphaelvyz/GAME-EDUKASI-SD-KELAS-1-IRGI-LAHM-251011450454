@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tangkap Jawaban!</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;min-height:100%}
+body{font-family:'Comic Sans MS','Chalkboard SE','Trebuchet MS',sans-serif;color:#3b2a6b;background:linear-gradient(#7fd3ff,#e3f7ff 70%);min-height:100vh;overflow-x:hidden}
+#bg{position:fixed;inset:0;pointer-events:none;z-index:0}
+#bg .sun{position:absolute;top:10px;right:14px;font-size:4rem}
+#bg .cl{position:absolute;font-size:3.6rem;animation:drift linear infinite}
+#bg .gr{position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(#5fdc7a,#38b85a);border-radius:50% 50% 0 0/24px 24px 0 0}
+@keyframes drift{from{left:-100px}to{left:105%}}
+.screen{display:none;position:relative;z-index:1;max-width:700px;margin:0 auto;padding:16px 14px 90px;text-align:center}
+.screen.on{display:block;animation:pop .4s}
+@keyframes pop{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:none}}
+.card{background:#fff;border-radius:30px;padding:18px;box-shadow:0 8px 0 rgba(59,42,107,.15);margin-bottom:14px}
+h1{font-size:clamp(2rem,9vw,3.3rem);margin:6px 0;color:#fff;text-shadow:0 4px 0 #9b6bff,0 8px 0 rgba(0,0,0,.1);animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.btn{font:inherit;font-weight:800;font-size:1.5rem;border:0;border-radius:26px;padding:14px 30px;min-height:64px;color:#fff;background:#4cc96b;cursor:pointer;box-shadow:0 7px 0 rgba(0,0,0,.2);transition:transform .1s,box-shadow .1s;margin:5px}
+.btn:active{transform:translateY(6px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+.btn.small{font-size:1.1rem;min-height:46px;padding:8px 18px}
+.mascot{font-size:4.5rem;display:inline-block;animation:bob 1.6s ease-in-out infinite}
+.pill{background:#fff;border-radius:99px;padding:4px 16px;font-weight:800;font-size:1.25rem;box-shadow:0 4px 0 rgba(59,42,107,.15);display:inline-block}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+/* menu tema */
+.themes{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:14px}
+.tcard{border:0;border-radius:28px;padding:16px 10px;color:#fff;cursor:pointer;font:inherit;box-shadow:0 8px 0 rgba(0,0,0,.2);transition:transform .15s;text-align:center}
+.tcard:hover{transform:translateY(-5px) rotate(-1deg)}
+.tcard:active{transform:translateY(5px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.tcard .em{font-size:3.6rem;line-height:1.1}.tcard b{display:block;font-size:1.35rem;margin:4px 0}
+.tcard .pb{height:12px;background:rgba(255,255,255,.4);border-radius:9px;overflow:hidden;margin:8px 8px 4px}
+.tcard .pb i{display:block;height:100%;background:#fff;border-radius:9px}
+.tcard small{font-weight:800;font-size:1rem}
+/* peta level */
+.lvls{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;max-width:520px;margin:10px auto}
+.lv{aspect-ratio:1;border-radius:50%;border:0;font:inherit;font-weight:800;font-size:clamp(1.4rem,6vw,2rem);color:#fff;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.22);transition:transform .12s;position:relative}
+.lv:hover:not(:disabled){transform:scale(1.1)}
+.lv:disabled{background:#b8b8c8!important;cursor:not-allowed}
+.lv.cur{animation:pulse 1.2s infinite}
+.lv i{position:absolute;right:-4px;top:-8px;font-style:normal;font-size:1.2rem}
+@keyframes pulse{50%{transform:scale(1.1);box-shadow:0 6px 0 rgba(0,0,0,.22),0 0 0 8px rgba(255,217,61,.8)}}
+/* game */
+.say{display:inline-block;background:#fff;border-radius:20px;padding:6px 16px;font-weight:800;font-size:1.2rem;box-shadow:0 4px 0 rgba(59,42,107,.15)}
+#big{font-size:clamp(2.2rem,10vw,3.6rem);min-height:1.3em;letter-spacing:3px;word-break:break-word;transition:filter .4s}
+#big.sil{filter:brightness(0) opacity(.7)}
+#big svg{vertical-align:middle}
+#q{font-size:clamp(1.4rem,5.5vw,2rem);font-weight:800;margin:6px 0 16px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt{font:inherit;font-weight:800;font-size:clamp(1.7rem,7.5vw,2.4rem);min-height:96px;border:5px solid #4d9cff;border-radius:28px;background:#f4f9ff;color:#3b2a6b;cursor:pointer;box-shadow:0 7px 0 rgba(0,0,0,.18);animation:float 2.2s ease-in-out infinite;transition:transform .1s,box-shadow .1s;padding:6px}
+.opt.small{font-size:clamp(1.2rem,5vw,1.6rem)}
+.opt:nth-child(2){border-color:#4cc96b;animation-delay:-.5s;background:#f3fff6}
+.opt:nth-child(3){border-color:#ff9f1c;animation-delay:-1s;background:#fff8ee}
+.opt:nth-child(4){border-color:#9b6bff;animation-delay:-1.5s;background:#f8f3ff}
+@keyframes float{50%{transform:translateY(-6px)}}
+.opt:active:not(:disabled){animation:none;transform:translateY(6px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+.opt.good{background:#4cc96b!important;border-color:#2c9e4b;color:#fff;animation:jump .6s}
+.opt.bad{animation:shake .4s;opacity:.35}
+@keyframes jump{40%{transform:scale(1.15) rotate(-4deg)}70%{transform:scale(1.08) rotate(4deg)}}
+@keyframes shake{25%{transform:translateX(-12px)}75%{transform:translateX(12px)}}
+#fb{font-size:1.4rem;font-weight:800;min-height:1.6em;margin-top:12px}
+.slots{display:flex;justify-content:center;gap:8px;margin:6px 0 14px;flex-wrap:wrap}
+.slot{width:58px;height:66px;border:4px dashed #b9a8ff;border-radius:16px;display:grid;place-items:center;font-size:2.2rem;font-weight:800;background:#faf7ff}
+.tiles{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.tile{width:66px;height:74px;font:inherit;font-size:2.1rem;font-weight:800;border:0;border-radius:18px;background:#9b6bff;color:#fff;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.tile:active:not(:disabled){transform:translateY(5px)}.tile:disabled{opacity:.25}
+.fall{position:fixed;top:-50px;font-size:2.2rem;z-index:50;pointer-events:none;animation:fall 2s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+#snd{position:fixed;top:10px;left:10px;z-index:9;width:54px;height:54px;border-radius:50%;border:0;background:#fff;font-size:1.6rem;cursor:pointer;box-shadow:0 4px 0 rgba(59,42,107,.2)}
+.link{background:none;border:0;font:inherit;font-weight:700;color:#3b2a6b;text-decoration:underline;cursor:pointer;margin-top:14px}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.shopg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:12px}
+.item{background:#fff;border-radius:26px;padding:14px 8px;box-shadow:0 7px 0 rgba(59,42,107,.15)}
+.item .ie{font-size:4rem;line-height:1.1;animation:bob 2.2s ease-in-out infinite}
+.item b{display:block;font-size:1.2rem;margin:4px 0}
+#ex{margin-top:14px;background:#fffbe0;border:4px solid #ffd93d;border-radius:26px;padding:14px;animation:pop .4s}
+#ex h3{margin:4px 0;font-size:1.7rem;color:#2c9e4b}#ex p{margin:6px 0;font-size:1.2rem;font-weight:700}
+#ex .exs{font-size:3rem;animation:spinIn .8s}
+@keyframes spinIn{from{transform:rotate(-200deg) scale(0)}to{transform:none}}
+#toast{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.5);background:#fff;border:5px solid #ffd93d;border-radius:28px;padding:16px 24px;font-weight:800;font-size:1.6rem;z-index:99;opacity:0;pointer-events:none;transition:.3s;max-width:90vw}
+#toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<div id="bg"><div class="sun">☀️</div><div class="cl" style="top:40px;animation-duration:50s">☁️</div><div class="cl" style="top:120px;animation-duration:65s;animation-delay:-25s">☁️</div><div class="gr"></div></div>
+<button id="snd" aria-label="Suara">🔊</button>
+<div id="toast"></div>
+
+<section id="home" class="screen on">
+  <div class="mascot" id="hMasc">🐻</div><div id="hFav" style="font-weight:800"></div>
+  <h1>🎮 TANGKAP JAWABAN!</h1>
+  <p style="font-size:1.4rem;font-weight:800;margin:4px">Ayo belajar sambil bermain!</p>
+  <span class="pill">⭐ <span id="tot">0</span></span>
+  <div class="themes" id="themes"></div>
+  <div class="row"><button class="btn" id="bShop" style="background:#ff5fa2">🎁 Toko Hadiah</button><button class="btn" id="bColl" style="background:#9b6bff">🎒 Koleksi Saya</button></div>
+  <button class="link" id="bReset">🔄 Reset Progress</button>
+</section>
+
+<section id="map" class="screen">
+  <div class="top"><button class="btn small" style="background:#4d9cff" id="bHome">🏠 Menu</button><span class="pill">⭐ <span class="tot">0</span></span></div>
+  <div class="card"><div class="mascot" id="mEm" style="font-size:3.6rem"></div><h2 id="mName" style="margin:2px 0;font-size:1.8rem"></h2>
+    <div class="pill" id="mProg"></div>
+    <div class="lvls" id="lvls"></div></div>
+</section>
+
+<section id="game" class="screen">
+  <div class="top"><button class="btn small" style="background:#4d9cff" id="bBack">🗺️ Peta</button><span class="pill" id="gLv"></span><span class="pill" id="no"></span></div>
+  <div><span class="mascot" style="font-size:3rem">🐻</span> <span class="say" id="say">Ayo!</span></div>
+  <div class="pill" id="gStars" style="margin:8px 0"></div>
+  <div class="card"><div id="big"></div><div id="q"></div><div class="opts" id="opts"></div><div id="fb"></div><div id="ex"></div></div>
+</section>
+
+<section id="shop" class="screen">
+  <div class="top"><button class="btn small" style="background:#4d9cff" id="bShopHome">🏠 Menu</button><span class="pill">⭐ <span class="tot">0</span></span></div>
+  <h2 style="margin:4px;font-size:2rem;color:#fff;text-shadow:0 3px 0 #9b6bff">🎁 Toko Hadiah</h2><div class="shopg" id="shopList"></div>
+</section>
+<section id="coll" class="screen">
+  <div class="top"><button class="btn small" style="background:#4d9cff" id="bCollHome">🏠 Menu</button><span class="pill">⭐ <span class="tot">0</span></span></div>
+  <h2 style="margin:4px;font-size:2rem;color:#fff;text-shadow:0 3px 0 #9b6bff">🎒 Koleksi Saya</h2>
+  <div class="card" id="collEmpty" style="font-size:1.4rem;font-weight:800">Koleksimu masih kosong. Ayo bermain dan kumpulkan bintang!</div>
+  <div class="shopg" id="collList"></div>
+</section>
+<section id="result" class="screen">
+  <div class="card"><div class="mascot">🏆</div>
+    <h2 style="font-size:2rem;margin:6px 0">🏆 Kamu hebat! Level selesai!</h2>
+    <div id="rStars" style="font-size:2.6rem;margin:8px 0"></div>
+    <p style="font-size:1.4rem;font-weight:800" id="rTxt"></p>
+    <button class="btn" id="bNext">➡️ Lanjut Level</button><br>
+    <button class="btn small" style="background:#ff9f1c" id="bRetry">🔄 Main Lagi</button>
+    <button class="btn small" style="background:#4d9cff" id="bMap">🗺️ Peta</button></div>
+</section>
+
+<section id="win" class="screen">
+  <div class="card"><div class="mascot" style="font-size:6rem">🏆🎉</div>
+    <h2 style="font-size:2.4rem;margin:6px 0">SELAMAT!</h2>
+    <p style="font-size:1.5rem;font-weight:800" id="wTxt"></p>
+    <button class="btn" id="bWMap">🗺️ Peta</button><button class="btn" style="background:#4d9cff" id="bWHome">🏠 Menu Utama</button></div>
+</section>
+
+<script>
+/* ===================================================================
+   TANGKAP JAWABAN! v2 – 5 tema x 10 level x 5 soal (HTML/CSS/JS murni)
+   Soal dibuat oleh "generator" per level (lihat bagian DATA SOAL), jadi
+   isi soal diacak tiap bermain dan tidak mengulang soal yang sama.
+   =================================================================== */
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=a=>a[rnd(0,a.length-1)];
+const uniq=a=>[...new Set(a)];
+const rep=(e,n)=>Array(n).fill(e).join(' ');
+
+/* ---------- Penyimpanan: progres tiap tema terpisah ---------- */
+const KEY='tangkapJawaban_v2';
+let sv={p:{},mute:false,bal:0,own:[],seen:[],fav:null};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.p)sv=s;}catch(e){}
+// Migrasi dari versi lama: saldo bintang = jumlah bintang lama
+if(typeof sv.bal!=='number')sv.bal=Object.values(sv.p).reduce((a,l)=>a+l.reduce((x,y)=>x+y,0),0);
+sv.own=sv.own||[];sv.seen=sv.seen||[];sv.fav=sv.fav||null;
+let seen=new Set(sv.seen);   // soal yang bintangnya sudah diberikan (tidak diberi lagi)
+const hk=t=>{let h=5381;for(const c of t)h=((h<<5)+h+c.charCodeAt(0))|0;return (h>>>0).toString(36);};
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(sv))}catch(e){}};
+const prog=id=>sv.p[id]||(sv.p[id]=Array(10).fill(0));
+const total=()=>sv.bal;
+const doneN=id=>prog(id).filter(x=>x>0).length;
+const unlocked=(id,l)=>l===0||prog(id)[l-1]>0;
+
+/* ---------- Suara ---------- */
+let actx=null;
+function tone(seq){
+  if(sv.mute)return;
+  try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();
+    let t=actx.currentTime;
+    seq.forEach(([f,d,ty])=>{const o=actx.createOscillator(),g=actx.createGain();o.type=ty||'triangle';o.frequency.value=f;
+      g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+d);t+=d*.9;});}catch(e){}
+}
+const sfx={ok:()=>tone([[523,.12],[659,.12],[784,.12],[1047,.25]]),no:()=>tone([[300,.18,'sawtooth'],[240,.25,'sawtooth']]),
+  tap:()=>tone([[660,.06,'square']]),win:()=>tone([[523,.15],[659,.15],[784,.15],[1047,.15],[784,.15],[1047,.35]])};
+const updSnd=()=>$('#snd').textContent=sv.mute?'🔇':'🔊';
+$('#snd').onclick=()=>{sv.mute=!sv.mute;persist();updSnd();sfx.tap();};updSnd();
+
+/* ===================== DATA SOAL (generator) ===================== */
+// mk: buat soal pilihan ganda. Pilihan salah diambil dari pool (tanpa duplikat, tanpa jawaban benar)
+function mk(big,q,a,pool,n=3,extra){
+  const d=shuffle(uniq(pool).filter(x=>x!==a)).slice(0,n-1);
+  return Object.assign({big,q,a,opts:shuffle([a,...d])},extra);
+}
+// soal jawaban angka: 4 pilihan angka berbeda di rentang lo..hi
+function mkN(big,q,n,lo,hi,e){
+  const s=new Set([n]);let g=0;
+  while(s.size<4&&g++<99){const v=n+rnd(-3,3);if(v>=lo&&v<=hi)s.add(v);}
+  for(let v=lo;s.size<4;v++)s.add(v);
+  return {big,q,a:String(n),opts:shuffle([...s]).map(String),e};
+}
+const OBJ=['🍎','⭐','🐟','🎈','🚗','🍪'];
+// perbandingan jumlah (dipakai Dunia Angka & Kebun Buah)
+function compare(e1,e2){
+  const a=rnd(1,5),b=rnd(1,5),ans=a>b?'⬅️ Kiri':a<b?'Kanan ➡️':'🟰 Sama';
+  return mk(rep(e1,a)+'  ⚖️  '+rep(e2,b),'Mana yang lebih banyak?',ans,['⬅️ Kiri','Kanan ➡️','🟰 Sama'],3,
+    {e:`Kiri ada ${a}, kanan ada ${b}. `+(a>b?`${a} lebih banyak dari ${b}.`:a<b?`${b} lebih banyak dari ${a}.`:'Jumlahnya sama.')});
+}
+
+/* ---- A. Dunia Binatang: [emoji,nama,suara,makanan,habitat,ciri] ---- */
+/* Setiap soal: big, q (pertanyaan), opts (pilihan), a (jawaban benar), e (penjelasan). Pujian (p) dipilih acak saat level dimulai. */
+const AN=[['🐱','Kucing','meong','🐟','darat','punya kumis'],['🐶','Anjing','guk guk','🦴','darat','suka menggonggong'],
+ ['🐮','Sapi','moo','🌿','darat','menghasilkan susu'],['🐔','Ayam','kukuruyuk','🌽','darat','bertelur'],
+ ['🐑','Domba','mbee','🌿','darat','berbulu wol'],['🐘','Gajah',0,'🌿','darat','punya belalai'],
+ ['🐰','Kelinci',0,'🥕','darat','telinganya panjang'],['🐒','Monyet',0,'🍌','darat','pandai memanjat'],
+ ['🐟','Ikan',0,0,'air','punya sisik'],['🐳','Paus',0,0,'air','sangat besar'],
+ ['🐙','Gurita',0,0,'air','kakinya delapan'],['🦀','Kepiting',0,0,'air','punya capit']];
+const anN=AN.map(x=>x[1]),anE=AN.map(x=>x[0]),FOODS=['🐟','🦴','🌿','🌽','🥕','🍌'];
+const FN={'🐟':'ikan','🦴':'tulang','🌿':'rumput','🌽':'jagung','🥕':'wortel','🍌':'pisang'};
+const G_AN=[
+ ()=>{const a=pick(AN);return mk(a[0],'Ini hewan apa?',a[1],anN,3,{e:`Ini ${a[1]}. ${a[1]} ${a[5]}.`})},
+ ()=>{const a=pick(AN);return mk('',`Mana gambar ${a[1]}?`,a[0],anE,3,{e:`Gambar ${a[0]} adalah ${a[1]}. ${a[1]} ${a[5]}.`})},
+ ()=>{const s=AN.filter(x=>x[2]),a=pick(s);return mk('🔊',`Siapa yang berbunyi "${a[2]}"?`,a[0],s.map(x=>x[0]),3,{e:`${a[1]} berbunyi "${a[2]}". ${a[1]} ${a[5]}.`})},
+ ()=>{const a=pick(AN.filter(x=>x[3]));return mk(a[0],`Apa makanan ${a[1]}?`,a[3],FOODS,3,{e:`${a[1]} suka makan ${FN[a[3]]}.`})},
+ ()=>{const h=pick(['air','darat']),a=pick(AN.filter(x=>x[4]===h));return mk('',`Mana hewan yang hidup di ${h}?`,a[0],AN.filter(x=>x[4]!==h).map(x=>x[0]),3,{e:`${a[1]} hidup di ${h}.`})},
+ ()=>{const a=pick(AN);return mk('',`Hewan apa yang ${a[5]}?`,a[0],anE,3,{e:`${a[1]} ${a[5]}.`})},
+ ()=>{const a=pick(AN),n=rnd(2,6);return mkN(rep(a[0],n),`Ada berapa ${a[1]}?`,n,1,9,`Hitung satu per satu. Ada ${n} ${a[1]}.`)},
+ ()=>{const a=pick(AN.filter(x=>x[3]));return mk('🤔',`Aku ${a[5]} dan suka ${a[3]}. Siapa aku?`,a[0],anE,3,{e:`${a[1]} ${a[5]} dan suka makan ${FN[a[3]]}.`})},
+ ()=>{const a=pick(AN);return mk(a[0],'Tebak, siapa bayangan ini?',a[1],anN,3,{sil:1,e:`Itu ${a[1]}! ${a[1]} ${a[5]}.`})}];
+
+/* ---- B. Kebun Buah: [emoji,nama,warna,ukuran 1-3] ---- */
+const FR=[['🍎','Apel','Merah',2],['🍌','Pisang','Kuning',2],['🍉','Semangka','Hijau',3],['🍇','Anggur','Ungu',1],
+ ['🍊','Jeruk','Oranye',2],['🍓','Stroberi','Merah',1],['🍍','Nanas','Kuning',3],['🍒','Ceri','Merah',1],['🍋','Lemon','Kuning',1]];
+const DOT={Merah:'🔴',Kuning:'🟡',Hijau:'🟢',Ungu:'🟣',Oranye:'🟠'},frN=FR.map(x=>x[1]),frE=FR.map(x=>x[0]);
+const ROUND=FR.filter(x=>x[1]!=='Pisang').map(x=>x[0]),LONG=['🍌','🥒','🥕'];
+const G_FR=[
+ ()=>{const a=pick(FR);return mk(a[0],'Ini buah apa?',a[1],frN,3,{e:`Ini buah ${a[1]}. Warnanya ${a[2]}.`})},
+ ()=>{const a=pick(FR);return mk('',`Mana buah ${a[1]}?`,a[0],frE,3,{e:`Gambar ${a[0]} adalah buah ${a[1]}.`})},
+ ()=>{const a=pick(FR);return mk(a[0],`Buah ${a[1]} warnanya apa?`,DOT[a[2]]+' '+a[2],Object.keys(DOT).map(c=>DOT[c]+' '+c),3,{e:`Buah ${a[1]} biasanya berwarna ${a[2]}.`})},
+ ()=>rnd(0,1)?mk('','Mana yang bentuknya panjang?',pick(LONG),ROUND,3,{e:'Pisang, timun, dan wortel bentuknya panjang.'}):mk('','Mana yang bentuknya bulat?',pick(ROUND),LONG,3,{e:'Buah ini bulat seperti bola.'}),
+ ()=>{const a=pick(FR),n=rnd(2,6);return mkN(rep(a[0],n),`Ada berapa ${a[1]}?`,n,1,9,`Hitung satu per satu. Ada ${n} ${a[1]}.`)},
+ ()=>{const [a,b]=shuffle(frE);return compare(a,b)},
+ ()=>rnd(0,1)?mk('','Mana buah yang paling besar?',pick(FR.filter(x=>x[3]===3))[0],FR.filter(x=>x[3]===1).map(x=>x[0]),3,{e:'Semangka dan nanas adalah buah yang besar.'}):
+   mk('','Mana buah yang paling kecil?',pick(FR.filter(x=>x[3]===1))[0],FR.filter(x=>x[3]>1).map(x=>x[0]),3,{e:'Anggur, stroberi, ceri, dan lemon adalah buah yang kecil.'}),
+ ()=>{const a=pick(FR);return mk('🤔',`Aku buah berwarna ${a[2]}. Siapa aku?`,a[0],FR.filter(x=>x[2]!==a[2]).map(x=>x[0]),3,{e:`${a[1]} berwarna ${a[2]}.`})},
+ ()=>{const a=pick(FR);return mk(a[0],'Tebak, buah apa bayangan ini?',a[1],frN,3,{sil:1,e:`Itu buah ${a[1]}! Warnanya ${a[2]}.`})}];
+
+/* ---- C. Dunia Angka ---- */
+const R10=Array.from({length:10},(_,i)=>String(i+1));
+const G_NU=[
+ ()=>{const n=rnd(1,10);return mk('',`Mana angka ${n}?`,String(n),R10,4,{e:`Ini angka ${n}. Lihat bentuknya baik-baik.`})},
+ ()=>{const n=rnd(1,8);return mkN(rep(pick(OBJ),n),'Ada berapa?',n,1,10,`Hitung satu per satu. Jumlahnya ${n}.`)},
+ ()=>{const o=pick(OBJ),n=rnd(2,6);return mk('',`Mana yang jumlahnya ${n}?`,rep(o,n),[1,2,3,4,5,6,7].map(k=>rep(o,k)),3,{small:1,e:`Hitung gambarnya. Yang jumlahnya ${n} adalah jawabannya.`})},
+ ()=>{const [a,b]=shuffle(OBJ);return compare(a,b)},
+ ()=>{const a=rnd(1,5),b=rnd(1,5),o=pick(OBJ);return mkN(rep(o,a)+'  ➕  '+rep(o,b),`${a} + ${b} = ?`,a+b,1,10,`${a} ditambah ${b} sama dengan ${a+b}. Coba hitung dengan jari-jari tanganmu.`)},
+ ()=>{const a=rnd(3,9),b=rnd(1,a-1);return mkN(rep(pick(OBJ),a),`${a} − ${b} = ?`,a-b,0,9,`${a} dikurangi ${b} sama dengan ${a-b}. Ambil ${b} dari ${a}, sisanya ${a-b}.`)},
+ ()=>{if(rnd(0,1)){const s=rnd(1,6),h=rnd(1,2),q=[s,s+1,s+2,s+3];const m=q[h];q[h]='❓';return mkN(q.join(', '),'Angka berapa yang hilang?',m,1,10,`Angkanya naik satu-satu. Yang hilang adalah ${m}.`);}
+   const t=shuffle(R10).slice(0,4),small=rnd(0,1),r=String(small?Math.min(...t):Math.max(...t));
+   return {big:t.join('   '),q:small?'Mana angka yang paling kecil?':'Mana angka yang paling besar?',a:r,opts:t,e:`${r} adalah angka yang paling ${small?'kecil':'besar'} di antara angka tadi.`};},
+ ()=>{if(rnd(0,1)){const n=rnd(1,9);return mkN('',`Angka sesudah ${n} adalah?`,n+1,1,10,`Sesudah ${n} adalah ${n+1}. Hitung maju satu angka.`);}const n=rnd(2,10);return mkN('',`Angka sebelum ${n} adalah?`,n-1,1,10,`Sebelum ${n} adalah ${n-1}. Hitung mundur satu angka.`);},
+ ()=>{const n=rnd(6,10);return mkN(rep(pick(OBJ),n),'Tebak, ada berapa?',n,1,12,`Hitung pelan-pelan sambil menunjuk. Ada ${n}.`)}];
+
+/* ---- D. Dunia Huruf ---- */
+const LET='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),VOW='AIUEO'.split('');
+const WORDS=[['AYAM','🐔'],['BOLA','⚽'],['BUKU','📖'],['MATA','👁️'],['SAPI','🐄'],['IKAN','🐟'],['KUDA','🐴'],['TOPI','🧢'],['MEJA','🪑'],['KAKI','🦶'],['DOMBA','🐑'],['ULAR','🐍']];
+const SIM={b:'dpq',d:'bpq',p:'qbd',q:'pdb',m:'nwu',n:'muh',u:'nvw',w:'mvu',E:'FLB',O:'QCD',M:'NWH'};
+const spellGen=()=>{const w=pick(WORDS);return {t:'spell',w:w[0],big:w[1],q:'Susun huruf menjadi kata!',a:w[0],e:`Susunan hurufnya adalah ${w[0].split('').join('-')}. Jadi katanya ${w[0]}.`};};spellGen.spell=true;
+const G_LE=[
+ ()=>{const l=pick(LET.slice(0,13));return mk(l,'Huruf apa ini?',l,LET.slice(0,13),4,{e:`Ini huruf ${l}.`})},
+ ()=>{const l=pick(LET.slice(13));return mk('',`Mana huruf ${l}?`,l,LET,4,{e:`Huruf yang dicari adalah ${l}.`})},
+ ()=>{const w=pick(WORDS);return mk(w[1],`Huruf pertama kata "${w[0]}" adalah?`,w[0][0],LET,4,{e:`Kata ${w[0]} dimulai dengan huruf ${w[0][0]}.`})},
+ ()=>{const w=pick(WORDS);return mk('',`Mana gambar yang diawali huruf ${w[0][0]}?`,w[1],WORDS.filter(x=>x[0][0]!==w[0][0]).map(x=>x[1]),3,{e:`Gambar ${w[1]} adalah ${w[0]}. ${w[0]} dimulai dengan huruf ${w[0][0]}.`})},
+ ()=>{const v=pick(VOW);return mk('','Mana huruf vokal?',v,LET.filter(x=>!VOW.includes(x)),4,{e:`${v} adalah huruf vokal. Huruf vokal ada lima: A, I, U, E, O.`})},
+ ()=>{const l=pick(Object.keys(SIM));return mk(l,'Mana huruf yang sama dengan ini?',l,SIM[l].split(''),4,{e:`Lihat bentuknya baik-baik. Huruf yang sama adalah ${l}.`})},
+ ()=>{const w=pick(WORDS),i=rnd(0,w[0].length-1),m=w[0].split('');m[i]='＿';return mk(w[1]+'  '+m.join(' '),'Huruf apa yang hilang?',w[0][i],LET,4,{e:`Katanya ${w[0]}. Huruf yang hilang adalah ${w[0][i]}.`})},
+ spellGen,
+ ()=>{const w=pick(WORDS);return mk(w[1],'Huruf pertama gambar ini?',w[0][0],LET,4,{sil:1,e:`Gambar ini adalah ${w[0]}. Awalnya huruf ${w[0][0]}.`})}];
+
+/* ---- E. Warna dan Bentuk (gambar SVG) ---- */
+const COL=[['Merah','#ff4d4d','','🍎'],['Kuning','#ffd21f','','🍌'],['Biru','#3d8bff','','🐳'],['Hijau','#33c25a','','🌿'],['Oranye','#ff9a1f','','🍊'],['Ungu','#9b5de5','','🍇']];
+const SH=[['lingkaran','c','bulat dan tidak punya sudut'],['persegi','s','punya empat sisi sama panjang'],['segitiga','t','punya tiga sisi dan tiga sudut'],['persegi panjang','r','punya empat sisi: dua panjang dan dua pendek']];
+function svg(k,col,s=64){
+  const f={c:`<circle cx="50" cy="50" r="44" fill="${col}"/>`,s:`<rect x="10" y="10" width="80" height="80" rx="4" fill="${col}"/>`,
+    t:`<polygon points="50,8 94,90 6,90" fill="${col}"/>`,r:`<rect x="3" y="25" width="94" height="50" rx="4" fill="${col}"/>`}[k];
+  return `<svg width="${s}" height="${s}" viewBox="0 0 100 100">${f}</svg>`;
+}
+const rc=()=>pick(COL)[1],kinds=()=>shuffle(SH),cap=t=>t[0].toUpperCase()+t.slice(1);
+const shapeGen=ix=>()=>{const [n,k,d]=SH[ix],E={e:`${cap(n)} ${d}.`};
+  if(rnd(0,1)) return mk(svg(k,rc(),90),'Ini bentuk apa?',n,SH.map(x=>x[0]),4,E);
+  return mk('',`Mana yang berbentuk ${n}?`,svg(k,rc()),SH.filter(x=>x[1]!==k).map(x=>svg(x[1],rc())),4,E);};
+const G_CO=[
+ ()=>{const c=pick(COL);return mk('',`Mana warna ${c[0]}?`,svg('c',c[1],56),COL.map(x=>svg('c',x[1],56)),4,{e:`Warna ini adalah ${c[0]}.`})},
+ ()=>{const c=pick(COL);return mk('',`Benda mana yang berwarna ${c[0]}?`,c[3],COL.map(x=>x[3]),3,{e:`${c[3]} berwarna ${c[0]}.`})},
+ shapeGen(0),shapeGen(1),shapeGen(2),shapeGen(3),
+ ()=>{const [n,k]=pick(SH),o=pick(SH.filter(x=>x[1]!==k)),cs=shuffle(COL);
+   return mk('',`Mana yang BUKAN ${n}?`,svg(o[1],cs[0][1]),[1,2,3].map(i=>svg(k,cs[i][1])),4,{e:`Tiga bentuk lainnya adalah ${n}. Yang berbeda adalah ${o[0]}.`})},
+ ()=>{const [a,b]=shuffle(COL),[k1,k2,k3]=kinds(),c=a;return mk(svg(k1[1],c[1],90),'Mana yang warnanya sama?',svg(k2[1],c[1]),[svg(k3[1],b[1]),svg(k1[1],shuffle(COL)[2][1])],3,{e:`Dua bentuk ini sama-sama berwarna ${c[0]}.`})},
+ ()=>{const c=shuffle(COL),[k,k2,k3]=kinds();
+   return mk('',`Aku ${c[0][0]} dan berbentuk ${k[0]}. Mana aku?`,svg(k[1],c[0][1]),[svg(k[1],c[1][1]),svg(k2[1],c[0][1]),svg(k3[1],c[2][1])],4,{e:`Aku berwarna ${c[0][0]} dan berbentuk ${k[0]}.`})}];
+
+const TH=[
+ {id:'an',n:'Dunia Binatang',e:'🐾',c:'#ff8a3d',g:G_AN},{id:'fr',n:'Kebun Buah',e:'🍎',c:'#ef476f',g:G_FR},
+ {id:'nu',n:'Dunia Angka',e:'🔢',c:'#4d9cff',g:G_NU},{id:'le',n:'Dunia Huruf',e:'🔤',c:'#9b6bff',g:G_LE},
+ {id:'co',n:'Warna dan Bentuk',e:'🎨',c:'#2fbf71',g:G_CO}];
+
+// Kumpulkan n soal berbeda dari satu generator
+function many(f,n){const o=[],seen=new Set();let g=0;
+  while(o.length<n&&g++<100){const q=f(),k=q.q+q.big+q.a;if(!seen.has(k)){seen.add(k);o.push(q);}}return o;}
+// Level 1-9: satu jenis materi. Level 10: campuran 5 jenis berbeda.
+function build(t,l){
+  if(l<9)return many(t.g[l],5);
+  return shuffle(t.g.filter(f=>!f.spell)).slice(0,5).map(f=>f());
+}
+
+/* ===================== ALUR GAME ===================== */
+let cur=null,L=0,qs,i,got,earned=0,lock,attempts;
+const PR=['Hebat sekali!','Pintar!','Bagus sekali!','Kamu hebat!','Keren sekali!','Wah, kamu jago!'],PRN=['Wah, kamu jago berhitung!','Pintar sekali!','Hebat!','Bagus sekali!'];
+const HINTS=['Lihat gambarnya pelan-pelan 👀','Hitung pakai jari ya ☝️','Kamu pasti bisa! 💪'];
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));$('#'+id).classList.add('on');scrollTo(0,0);
+  $('#tot').textContent=total();document.querySelectorAll('.tot').forEach(x=>x.textContent=total());}
+const stars=n=>'⭐'.repeat(n)+'☆'.repeat(5-n);
+
+/* Menu utama */
+function renderHome(){
+  const box=$('#themes');box.innerHTML='';
+  TH.forEach(t=>{const n=doneN(t.id),b=document.createElement('button');b.className='tcard';b.style.background=t.c;
+    b.innerHTML=`<div class="em">${t.e}</div><b>${t.n}</b><div class="pb"><i style="width:${n*10}%"></i></div><small>🏆 ${n}/10</small><div class="btn small" style="background:rgba(0,0,0,.22);margin-top:8px;box-shadow:none">▶ Main</div>`;
+    b.onclick=()=>{sfx.tap();openTheme(t);};box.appendChild(b);});
+  showFav();show('home');
+}
+/* Peta level */
+function openTheme(t){
+  cur=t;$('#mEm').textContent=t.e;$('#mName').textContent=t.n;
+  const p=prog(t.id),n=doneN(t.id),box=$('#lvls');box.innerHTML='';
+  $('#mProg').textContent=`🏆 ${n}/10 level`;
+  const next=p.findIndex(x=>!x);
+  for(let l=0;l<10;l++){const b=document.createElement('button'),open=unlocked(t.id,l);
+    b.className='lv'+(l===next?' cur':'');b.disabled=!open;b.style.background=t.c;
+    b.innerHTML=(open?l+1:'🔒')+(p[l]?'<i>🏆</i>':'');
+    b.onclick=()=>{sfx.tap();startLevel(l);};box.appendChild(b);}
+  show('map');
+}
+/* Bermain */
+function startLevel(l){
+  if(!unlocked(cur.id,l))return;
+  L=l;qs=build(cur,l);qs.forEach(q=>q.p=pick(cur.id==='nu'?PRN:PR));i=0;got=0;earned=0;show('game');render();
+}
+function render(){
+  lock=false;attempts=0;const q=qs[i];
+  $('#gLv').textContent=`${cur.e} Level ${L+1}`;$('#no').textContent=`Soal ${i+1}/5`;$('#gStars').textContent=stars(got);
+  const big=$('#big');big.innerHTML=q.big;big.classList.toggle('sil',!!q.sil);
+  $('#q').textContent=q.q;$('#fb').textContent='';$('#ex').innerHTML='';$('#say').textContent=i?'Ayo, kamu pasti bisa!':'Ayo kita mulai!';
+  const box=$('#opts');
+  if(q.t==='spell')return spell(q);
+  box.className='opts';box.innerHTML='';
+  q.opts.forEach(o=>{const b=document.createElement('button');b.className='opt'+(q.small?' small':'');b.innerHTML=o;
+    b.onclick=()=>{if(lock)return;if(o===q.a){box.querySelectorAll('.opt').forEach(x=>x.disabled=true);right(b);}else wrong(b);};box.appendChild(b);});
+}
+function right(btn){
+  lock=true;got++;const q=qs[i];if(btn)btn.classList.add('good');$('#big').classList.remove('sil');
+  // bintang hanya diberikan sekali untuk soal yang sama
+  const k=hk(cur.id+L+q.q+q.big+q.a),isNew=!seen.has(k);
+  if(isNew){seen.add(k);sv.seen.push(k);if(sv.seen.length>5000)sv.seen.shift();sv.bal++;earned++;}
+  persist();sfx.ok();burst(['⭐','🎉','✨']);$('#gStars').textContent=stars(got);
+  $('#fb').textContent='';$('#say').textContent='Hore! Hebat!';
+  const ex=$('#ex');
+  ex.innerHTML=`<div class="exs">⭐</div><h3>🎉 ${q.p}</h3><p>Jawaban benar: <b>${q.a}</b></p><p>${q.e||''}</p>
+    <div class="pill" style="background:#fff3b0">${isNew?'+1 ⭐':'⭐ Bintang soal ini sudah kamu dapat'}</div><br>
+    <button class="btn" id="bGo">${i>=4?'🏁 Selesai':'➡️ Lanjut'}</button>`;
+  $('#bGo').onclick=()=>{i++;i>=5?finish():render();};
+  ex.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function wrong(btn){
+  if(btn){btn.classList.add('bad');btn.disabled=true;}
+  sfx.no();$('#fb').textContent='😊 Hampir benar! Coba lagi, ya! '+HINTS[attempts++%3];$('#say').textContent='Coba lagi, ya!';
+}
+/* Susun kata: ketuk huruf berurutan */
+function spell(q){
+  const box=$('#opts');box.className='';let t;
+  do{t=shuffle(q.w.split(''));}while(t.join('')===q.w);
+  const pk=[];
+  const draw=()=>{
+    box.innerHTML='<div class="slots">'+[...q.w].map((_,k)=>`<span class="slot">${pk[k]!=null?t[pk[k]]:''}</span>`).join('')+'</div><div class="tiles">'+
+      t.map((c,k)=>`<button class="tile" data-i="${k}" ${pk.includes(k)?'disabled':''}>${c}</button>`).join('')+
+      '</div><button class="btn small" id="undo" style="background:#ff9f1c;margin-top:12px">↩ Hapus</button>';
+    box.querySelectorAll('.tile').forEach(b=>b.onclick=()=>{if(lock)return;tone([[700,.07,'square']]);pk.push(+b.dataset.i);draw();if(pk.length===q.w.length)check();});
+    $('#undo').onclick=()=>{if(!lock){pk.pop();draw();}};
+  };
+  const check=()=>{
+    if(pk.map(k=>t[k]).join('')===q.w)right(null);
+    else{lock=true;wrong();setTimeout(()=>{pk.length=0;lock=false;draw();},900);}
+  };
+  draw();
+}
+/* Level selesai */
+function finish(){
+  const p=prog(cur.id);p[L]=Math.max(p[L],got);persist();
+  $('#rStars').textContent=stars(got);$('#rTxt').textContent=earned?`+${earned} ⭐ bintang baru! Saldo: ${sv.bal} ⭐`:'Bagus! Coba level lain untuk bintang baru.';
+  $('#bNext').textContent=L<9?'➡️ Lanjut Level':'🏆 Lihat Hadiah';
+  show('result');sfx.win();burst(['⭐','🎉','🎈','✨'],40);
+}
+function burst(em,n=18){for(let k=0;k<n;k++){const s=document.createElement('span');s.className='fall';s.textContent=pick(em);
+  s.style.left=rnd(2,95)+'vw';s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2800);}}
+function winScreen(){
+  $('#wTxt').textContent=`Kamu menyelesaikan semua level ${cur.n}! ${cur.e}`;show('win');sfx.win();burst(['🏆','⭐','🎉','🎈'],50);
+}
+
+/* ---------- Tombol ---------- */
+$('#bBack').onclick=()=>openTheme(cur);
+$('#bHome').onclick=renderHome;
+$('#bMap').onclick=()=>openTheme(cur);
+$('#bRetry').onclick=()=>startLevel(L);
+$('#bNext').onclick=()=>{if(L<9)startLevel(L+1);else if(doneN(cur.id)===10)winScreen();else openTheme(cur);};
+$('#bWMap').onclick=()=>openTheme(cur);
+$('#bWHome').onclick=renderHome;
+$('#bReset').onclick=()=>{if(confirm('Hapus semua bintang, progres, dan koleksi?')){sv={p:{},mute:sv.mute,bal:0,own:[],seen:[],fav:null};seen=new Set();persist();renderHome();}};
+document.addEventListener('click',e=>{if(e.target.closest('.btn,.lv')&&!e.target.closest('.tcard'))sfx.tap();});
+/* ===================== TOKO & KOLEKSI ===================== */
+// Ubah harga/item di sini (id harus unik)
+const ITEMS=[{id:'chick',e:'🐥',n:'Anak Ayam',price:10},{id:'rainbow',e:'🌈',n:'Stiker Pelangi',price:15},{id:'car',e:'🚗',n:'Mobil Mainan',price:20},
+ {id:'cat',e:'🐱',n:'Kucing Lucu',price:30},{id:'trophy',e:'🏆',n:'Piala Emas',price:50},{id:'dino',e:'🦖',n:'Dinosaurus',price:75},{id:'uni',e:'🦄',n:'Unicorn',price:100}];
+const owned=id=>sv.own.includes(id);
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2200);}
+function showScr(id){if($('#'+id).classList.contains('on'))document.querySelectorAll('.tot').forEach(x=>x.textContent=total());else show(id);}
+function card(it,pill,btnTxt,btnBg,dis,fn){
+  const c=document.createElement('div');c.className='item';
+  c.innerHTML=`<div class="ie">${it.e}</div><b>${it.n}</b><div class="pill">${pill}</div><br>`;
+  const b=document.createElement('button');b.className='btn small';b.style.background=btnBg;b.disabled=dis;b.textContent=btnTxt;b.onclick=fn;c.appendChild(b);return c;
+}
+function renderShop(){
+  const box=$('#shopList');box.innerHTML='';
+  ITEMS.forEach(it=>{const o=owned(it.id);box.appendChild(card(it,'⭐ '+it.price,o?'✅ Sudah dimiliki':'🛒 Beli',o?'#999':'#4cc96b',o,()=>buy(it)));});
+  showScr('shop');
+}
+function buy(it){
+  if(owned(it.id))return;
+  if(sv.bal<it.price){sfx.no();toast('Yuk, kumpulkan bintang lagi!');return;}
+  sv.bal=Math.max(0,sv.bal-it.price);sv.own.push(it.id);persist();
+  sfx.win();burst([it.e,'⭐','🎉'],35);toast('🎉 Yeay! Kamu mendapatkan item baru!');renderShop();
+}
+function renderColl(){
+  const box=$('#collList'),mine=ITEMS.filter(it=>owned(it.id));box.innerHTML='';
+  $('#collEmpty').style.display=mine.length?'none':'block';
+  mine.forEach(it=>{const f=sv.fav===it.id;box.appendChild(card(it,'✅ Sudah dimiliki',f?'💖 Favorit':'🤍 Jadikan favorit',f?'#ff5fa2':'#9b6bff',false,()=>{sv.fav=it.id;persist();renderColl();}));});
+  showScr('coll');
+}
+function showFav(){const it=ITEMS.find(x=>x.id===sv.fav&&owned(x.id));$('#hMasc').textContent=it?it.e:'🐻';$('#hFav').textContent=it?'💖 Favoritku: '+it.n:'';}
+$('#bShop').onclick=renderShop;$('#bColl').onclick=renderColl;
+$('#bShopHome').onclick=renderHome;$('#bCollHome').onclick=renderHome;
+renderHome();
+</script>
+</body>
+</html>
